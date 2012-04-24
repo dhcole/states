@@ -1,0 +1,84 @@
+ <!doctype html>
+<html>
+<head>
+    <link rel="stylesheet" href="leaflet/leaflet.css" />
+    <!--[if lte IE 8]>
+        <link rel="stylesheet" href="leaflet/leaflet.ie.css" />
+    <![endif]-->
+
+    <style type="text/css">
+        #map {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            }
+    </style>
+</head>
+<body>
+    <div id="map"></div>    
+
+    <script src="leaflet/leaflet.js"></script>
+    <script src="wax.leaf.min.js"></script> 
+    <script src="states.js"></script> 
+    <script type="text/javascript">
+    
+        // Docs: http://leaflet.cloudmade.com/examples/geojson.html
+    
+        // Make a new Leaflet map in your container div
+        var map = new L.Map('map')
+          
+        // Center the map on US
+        .setView(new L.LatLng(39.5, -98.35), 4);
+        
+        // Define a geojson data layer
+        var geojsonLayer = new L.GeoJSON();
+        
+        // Define default and hover styles
+        var defaultStyle = {
+                weight: 1,
+                color: "#fff",
+                fillColor: false,
+                opacity: 1,
+                fillOpacity: 0
+            },
+            highlightStyle = {
+                weight: 2,
+                color: "#333",
+                fillColor: false,
+                opacity: 1,
+                fillOpacity: 0
+            };
+        
+        // Set default style, show state name on click, change style on hover
+        geojsonLayer.on("featureparse", function(e) {
+            e.layer.setStyle(defaultStyle);
+            e.layer.bindPopup(e.properties.name);
+            (function(properties, layer) {
+                layer.on("mouseover", function() {
+                    layer.setStyle(highlightStyle);
+                });
+                layer.on("mouseout", function() {
+                    layer.setStyle(defaultStyle);
+                });
+            })(e.properties, e.layer);
+        });
+        
+        // Populate our geojson layer with data
+        geojsonLayer.addGeoJSON(states); // from states.js
+        
+        // Add geojson layer to the map
+        map.addLayer(geojsonLayer);       
+        
+        // Get metadata about the map from MapBox
+        wax.tilejson('http://a.tiles.mapbox.com/v3/dhcole.map-9ldml3nd.jsonp',
+            function(tilejson) {
+                // Add MapBox Streets as a base layer
+                map.addLayer(new wax.leaf.connector(tilejson));      
+            });        
+    </script>
+</body>
+</html>
